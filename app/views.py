@@ -5,9 +5,14 @@ Werkzeug Documentation:  https://werkzeug.palletsprojects.com/
 This file creates your application.
 """
 
-from app import app
+from app import app,db
 from flask import render_template, request, jsonify, send_file
+from app.models import lab5
+from app.forms import MovieForm
+from flask_wtf.csrf import generate_csrf
 import os
+from werkzeug.utils import secure_filename
+from .forms import MovieForm
 
 
 ###
@@ -17,6 +22,43 @@ import os
 @app.route('/')
 def index():
     return jsonify(message="This is the beginning of our API")
+
+
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf():
+    return jsonify({'csrf_token': generate_csrf()})
+
+
+@app.route('/api/v1/movies', methods=['POST'])
+def movies():
+    form= MovieForm()
+    result=''
+
+    if form.validate_onsubmit():
+        title= form.title.data
+        description=form.description.data
+        poster=form.poster.data
+
+        filename=secure_filename(poster.filename)
+
+        result=jsonify({"message":"Movie added Succesfully",
+        "title":form.title.data,
+        "poster":filename,
+        "description":form.despcription.data})
+        
+        poster.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        db.session.add(lab5(title, description, filename))
+        db.session.commit()
+
+        return result
+    else:
+        e = form_errors(form)
+        if (e):
+            e_list= {"errors": []}
+            e_list['errors']=e
+        return result
+
 
 
 ###

@@ -8,8 +8,8 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 class MovieForm(FlaskForm):
     title = StringField('Title', validators=[InputRequired()])
     description = TextAreaField('Description', validators=[InputRequired()])
-    poster = FileField('Image', validators=[
-        FileRequired(), 
-        FileAllowed(['jpg','png'])
-        ])
-        
+    poster = FileField('Movie Photo', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')
+    ])
+
